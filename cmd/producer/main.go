@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +12,11 @@ import (
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"indasto1.com/unit3-mhs/handlers"
+)
+
+var (
+	listen     = *flag.String("listen", ":8080", "router's port on which to listen")
+	kafkaAddrs = *flag.String("kafka-addrs", "", "kafka's host:port list separated by coma")
 )
 
 func CreateRouter() *gin.Engine {
@@ -38,9 +44,9 @@ func main() {
 		}
 	}()
 
-	quitSignalCh := make(chan os.Signal, 1)
-	signal.Notify(quitSignalCh, syscall.SIGTERM, syscall.SIGINT)
-	<-quitSignalCh
+	sigtermCh := make(chan os.Signal, 1)
+	signal.Notify(sigtermCh, syscall.SIGTERM, syscall.SIGINT)
+	<-sigtermCh
 
 	log.Info("Shutdown router...")
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 15*time.Second)
