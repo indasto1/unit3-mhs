@@ -20,8 +20,9 @@ func CreateConsumerGroup(addresses []string) (sarama.ConsumerGroup, error) {
 }
 
 type ConsumerSumGroupHandler struct{}
-
+// not implemented
 func (c ConsumerSumGroupHandler) Setup(sarama.ConsumerGroupSession) error   { return nil }
+// not implemented
 func (c ConsumerSumGroupHandler) Cleanup(sarama.ConsumerGroupSession) error { return nil }
 
 func (c ConsumerSumGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
@@ -46,6 +47,8 @@ func (c ConsumerSumGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSessio
 	}
 }
 
+// Start all consumers from consumerGroups array on the certain topic
+// wg.add(1) is called for each launched consumer
 func StartSumCalculator(consumerGroups []sarama.ConsumerGroup, topic string, wg *sync.WaitGroup) context.CancelFunc {
 	ctx, ctxCancelFn := context.WithCancel(context.Background())
 

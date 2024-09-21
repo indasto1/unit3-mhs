@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Send an error in response, if any pending handler will sets to the gin's context ErrorTypePublic error
 func HandleError(c *gin.Context) {
 	c.Next()
 
