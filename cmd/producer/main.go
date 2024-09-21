@@ -1,7 +1,8 @@
 // Producer service, that has has only one POST /data endpoint which when called will push message to kafka.
 // Always exposed at 8080 port
 // cli args:
-//   -kafka-addrs 	- (string) kafka's host:port list separated by coma
+//
+//	-kafka-addrs 	- (string) kafka's host:port list separated by coma
 package main
 
 import (

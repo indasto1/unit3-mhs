@@ -1,7 +1,8 @@
 // Consumer service, which listents on one topic (sum) in kafka
 // cli args:
-//   -kafka-addrs 	- (string) kafka's host:port list separated by coma
-//	 -num-consumers - (int) number of partitions for sum topic in kafka
+//
+//	-kafka-addrs 	- (string) kafka's host:port list separated by coma
+//	-num-consumers - (int) number of partitions for sum topic in kafka
 package main
 
 import (

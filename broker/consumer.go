@@ -20,8 +20,10 @@ func CreateConsumerGroup(addresses []string) (sarama.ConsumerGroup, error) {
 }
 
 type ConsumerSumGroupHandler struct{}
+
 // not implemented
-func (c ConsumerSumGroupHandler) Setup(sarama.ConsumerGroupSession) error   { return nil }
+func (c ConsumerSumGroupHandler) Setup(sarama.ConsumerGroupSession) error { return nil }
+
 // not implemented
 func (c ConsumerSumGroupHandler) Cleanup(sarama.ConsumerGroupSession) error { return nil }
 

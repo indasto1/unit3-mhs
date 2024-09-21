@@ -32,7 +32,8 @@ func CloseProducer() error {
 	return Producer.Close()
 }
 
-// Send message to kafka by global producer var
+// Send sum model to kafka's topic by global Producer var
+// key is generated as uuid
 func SendMessage(s models.Sum, topic string) error {
 	v, err := json.Marshal(s)
 	if err != nil {
