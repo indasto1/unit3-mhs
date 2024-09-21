@@ -11,6 +11,7 @@ import (
 
 var Producer sarama.SyncProducer
 
+// Init global Producer var
 func InitProducer(addresses []string) error {
 	var err error
 
@@ -31,6 +32,7 @@ func CloseProducer() error {
 	return Producer.Close()
 }
 
+// Send message to kafka by global producer var
 func SendMessage(s models.Sum, topic string) error {
 	v, err := json.Marshal(s)
 	if err != nil {

@@ -1,3 +1,4 @@
+// Errors to return in HandleError middleware on any api call failure
 package handlers
 
 import (
