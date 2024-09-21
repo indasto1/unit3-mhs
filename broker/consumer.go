@@ -12,7 +12,11 @@ import (
 )
 
 func CreateConsumerGroup(addresses []string) (sarama.ConsumerGroup, error) {
-	return sarama.NewConsumerGroup(addresses, "sumConsumer", nil)
+	cfg := sarama.NewConfig()
+	cfg.Version = sarama.V3_6_0_0
+	cfg.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRange()}
+
+	return sarama.NewConsumerGroup(addresses, "sumConsumer", cfg)
 }
 
 type ConsumerSumGroupHandler struct{}
@@ -37,31 +41,34 @@ func (c ConsumerSumGroupHandler) ConsumeClaim(session sarama.ConsumerGroupSessio
 				continue
 			}
 
-			log.Infof("Sum of %v and %v is %v\n", sumModel.Num1, sumModel.Num2, sumModel.Num1+sumModel.Num2)
+			log.WithField("memberId", session.MemberID()).Infof("Sum of %v and %v is %v", sumModel.Num1, sumModel.Num2, sumModel.Num1+sumModel.Num2)
 		}
 	}
 }
 
-func StartSumCalculator(consumerGroup sarama.ConsumerGroup, topic string, wg *sync.WaitGroup) context.CancelFunc {
+func StartSumCalculator(consumerGroups []sarama.ConsumerGroup, topic string, wg *sync.WaitGroup) context.CancelFunc {
 	ctx, ctxCancelFn := context.WithCancel(context.Background())
-	go func() {
-		defer wg.Done()
 
-		groupHandler := ConsumerSumGroupHandler{}
-		for {
-			if ctx.Err() != nil {
-				return
-			}
-
-			if err := consumerGroup.Consume(ctx, []string{topic}, groupHandler); err != nil {
-				if errors.Is(err, sarama.ErrClosedConsumerGroup) {
+	for _, consumerGroup := range consumerGroups {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			groupHandler := ConsumerSumGroupHandler{}
+			for {
+				if ctx.Err() != nil {
 					return
 				}
 
-				log.WithError(err).Fatal("Error from consumer")
+				if err := consumerGroup.Consume(ctx, []string{topic}, groupHandler); err != nil {
+					if errors.Is(err, sarama.ErrClosedConsumerGroup) {
+						return
+					}
+
+					log.WithError(err).Fatal("Error from consumer")
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	return ctxCancelFn
 }

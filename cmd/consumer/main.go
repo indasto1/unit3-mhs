@@ -8,32 +8,44 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/IBM/sarama"
 	log "github.com/sirupsen/logrus"
 	"indasto1.com/unit3-mhs/broker"
 	"indasto1.com/unit3-mhs/configuration"
 )
 
 var (
-	kafkaAddrs = *flag.String("kafka-addrs", "", "kafka's host:port list separated by coma")
+	kafkaAddrs     = flag.String("kafka-addrs", "", "kafka's host:port list separated by coma")
+	numOfConsumers = flag.Int("num-consumers", 1, "number of partitions for sum topic")
 )
 
 func main() {
 	flag.Parse()
 
-	if kafkaAddrs == "" {
+	if *kafkaAddrs == "" {
 		log.Fatal("Kafka's addresses are not passed")
 	}
 
-	consumerGroup, err := broker.CreateConsumerGroup(strings.Split(kafkaAddrs, ","))
-	if err != nil {
-		log.WithError(err).Fatal("Failed to create consumer")
+	if *numOfConsumers <= 0 {
+		log.Fatal("Number of partitions can't b less then 0")
 	}
-	defer consumerGroup.Close()
+
+	kafkaAddrsArr := strings.Split(*kafkaAddrs, ",")
+	consumers := make([]sarama.ConsumerGroup, 0, *numOfConsumers)
+	for i := 0; i < *numOfConsumers; i++ {
+		consumer, err := broker.CreateConsumerGroup(kafkaAddrsArr)
+		if err != nil {
+			log.WithError(err).Fatal("Failed to create consumer")
+		}
+		defer consumer.Close()
+
+		consumers = append(consumers, consumer)
+	}
 
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	cancelFn := broker.StartSumCalculator(consumerGroup, configuration.SUM_TOPIC, &wg)
+	cancelFn := broker.StartSumCalculator(consumers, configuration.SUM_TOPIC, &wg)
 
+	log.WithField("Consumers num", *numOfConsumers).Info("Service started")
 	sigtermCh := make(chan os.Signal, 1)
 	signal.Notify(sigtermCh, syscall.SIGTERM, syscall.SIGINT)
 	<-sigtermCh
