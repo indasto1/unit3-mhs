@@ -21,3 +21,6 @@ down: ## Stop all services.
 	docker compose down
 
 restart: down run ## Restart all services.
+
+fmt: ## Run go formatter on all project's files
+	gofmt -s -w .
