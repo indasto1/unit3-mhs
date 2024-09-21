@@ -1,0 +1,22 @@
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download
+
+COPY . .
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ./cmd/producer
+
+
+FROM alpine:latest
+
+ENV KAFKA_ADDRS= 
+
+EXPOSE 8080
+
+COPY --from=0 /app/producer /producer
+COPY ./build/entrypoint.producer /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
