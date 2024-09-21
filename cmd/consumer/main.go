@@ -26,8 +26,8 @@ func main() {
 		log.Fatal("Kafka's addresses are not passed")
 	}
 
-	if *numOfConsumers <= 0 {
-		log.Fatal("Number of partitions can't b less then 0")
+	if *numOfConsumers < 1 {
+		log.Fatal("Number of partitions can't b less then 1")
 	}
 
 	kafkaAddrsArr := strings.Split(*kafkaAddrs, ",")
