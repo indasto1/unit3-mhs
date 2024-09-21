@@ -7,14 +7,22 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/IBM/sarama/mocks"
 	"github.com/gin-gonic/gin"
+	"indasto1.com/unit3-mhs/broker"
 	"indasto1.com/unit3-mhs/models"
 )
 
-var router = CreateRouter()
+var (
+	router = CreateRouter()
+)
 
 func TestDataProducerWithValidData(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+
+	producer := mocks.NewSyncProducer(t, mocks.NewTestConfig())
+	producer.ExpectSendMessageAndSucceed()
+	broker.Producer = producer
 
 	w := httptest.NewRecorder()
 
