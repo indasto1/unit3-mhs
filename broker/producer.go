@@ -9,7 +9,7 @@ import (
 	"indasto1.com/unit3-mhs/models"
 )
 
-var producer sarama.SyncProducer
+var Producer sarama.SyncProducer
 
 func InitProducer(addresses []string) error {
 	var err error
@@ -19,7 +19,7 @@ func InitProducer(addresses []string) error {
 	cfg.Producer.Return.Successes = true
 	cfg.Net.TLS.Enable = false
 
-	producer, err = sarama.NewSyncProducer(addresses, cfg)
+	Producer, err = sarama.NewSyncProducer(addresses, cfg)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func InitProducer(addresses []string) error {
 }
 
 func CloseProducer() error {
-	return producer.Close()
+	return Producer.Close()
 }
 
 func SendMessage(s models.Sum, topic string) error {
@@ -43,7 +43,7 @@ func SendMessage(s models.Sum, topic string) error {
 		Value: sarama.ByteEncoder(v),
 	}
 
-	_, _, err = producer.SendMessage(&msg)
+	_, _, err = Producer.SendMessage(&msg)
 	if err != nil {
 		return err
 	}
