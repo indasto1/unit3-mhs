@@ -1,0 +1,37 @@
+#!/bin/sh
+
+finish() {
+  ppid=$1
+  if [ -n "$ppid" ]; then
+    kill -s TERM $ppid
+  fi
+
+  # wait until $ppid finished normally to provide more time for termination process
+  while [ true ]; do
+    ps -ef | grep $ppid | grep -v grep > /dev/null 2>&1
+    if [ $? -eq 1 ]; then
+      echo "process finished"
+      break
+    fi
+    sleep 2
+  done
+  return 0
+}
+
+CMD_ARGS=
+if [ ! -z ${KAFKA_ADDRS} ]; then
+  CMD_ARGS="${CMD_ARGS} -kafka-addrs ${KAFKA_ADDRS}"
+fi
+if [ ! -z ${NUM_CONSUMERS} ]; then
+  CMD_ARGS="${CMD_ARGS} -num-consumers ${NUM_CONSUMERS}"
+fi
+
+
+echo "CMD_ARGS: $CMD_ARGS"
+
+./consumer $CMD_ARGS &
+PID=$!
+
+trap 'finish $PID' TERM INT
+
+wait $PID

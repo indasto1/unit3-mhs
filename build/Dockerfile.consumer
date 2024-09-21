@@ -1,0 +1,21 @@
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download
+
+COPY . .
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ./cmd/consumer
+
+
+FROM alpine:latest
+
+ENV KAFKA_ADDRS= 
+ENV NUM_CONSUMERS=
+
+COPY --from=0 /app/consumer /consumer
+COPY ./build/entrypoint.consumer /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
